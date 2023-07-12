@@ -14,6 +14,7 @@ int maxLoadedContainersRec(int capacity, const std::vector<Container>& container
     if (containers[n - 1].weight > capacity) {
         return maxLoadedContainersRec(capacity, containers, n - 1);
     } else {
+        // 
         int included = 1 + maxLoadedContainersRec(capacity - containers[n - 1].weight, containers, n - 1);
         int excluded = maxLoadedContainersRec(capacity, containers, n - 1);
         return std::max(included, excluded);
