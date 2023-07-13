@@ -1,4 +1,3 @@
-// aun no funciona
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -6,84 +5,82 @@
 using namespace std;
 
 struct Segment {
-    int left;
-    int right;
+    int left, right;
 };
 
 bool compareSegments(const Segment& seg1, const Segment& seg2) {
     return seg1.left < seg2.left;
 }
 
-vector<Segment> divideAndConquer(vector<Segment>& segments, int M) {
-    vector<Segment> solution;
+vector<Segment> minimalCoverage(vector<Segment>& segments, int start, int end, int M) {
+    vector<Segment> result;
 
-    if (segments.empty() || M <= 0) {
-        return solution;
+    // Caso base: no hay segmentos o el rango es menor o igual a cero
+    if (start >= end || M <= 0) {
+        return result;
     }
 
-    if (segments.size() == 1 && segments[0].left <= 0 && segments[0].right >= M) {
-        solution.push_back(segments[0]);
-        return solution;
-    }
+    int maxRight = -1;
+    int maxRightIndex = -1;
 
-    vector<Segment> segmentsBeforeM;
-    vector<Segment> segmentsAfterM;
-
-    for (const auto& segment : segments) {
-        if (segment.left <= 0 && segment.right >= M) {
-            solution.push_back(segment);
-        } else if (segment.left < M) {
-            segmentsBeforeM.push_back(segment);
-        } else {
-            segmentsAfterM.push_back(segment);
+    // Encontrar el segmento con el punto de fin más lejano dentro del rango [start, end)
+    for (int i = start; i < end; i++) {
+        if (segments[i].left <= M && segments[i].right > maxRight) {
+            maxRight = segments[i].right;
+            maxRightIndex = i;
         }
     }
 
-    if (solution.empty()) {
-        sort(segmentsBeforeM.begin(), segmentsBeforeM.end(), compareSegments);
-        solution = divideAndConquer(segmentsBeforeM, M);
+    // Comprobar si el segmento seleccionado cubre todo el rango [0, M]
+    if (maxRight >= M) {
+        // Agregar el segmento seleccionado a la solución
+        result.push_back(segments[maxRightIndex]);
 
-        if (!segmentsAfterM.empty()) {
-            vector<Segment> solutionAfterM = divideAndConquer(segmentsAfterM, M);
+        // Resolver recursivamente los subproblemas izquierdo y derecho
+        vector<Segment> leftResult = minimalCoverage(segments, start, maxRightIndex, segments[maxRightIndex].left);
+        vector<Segment> rightResult = minimalCoverage(segments, maxRightIndex + 1, end, M - maxRight);
 
-            if (!solutionAfterM.empty()) {
-                solution.insert(solution.end(), solutionAfterM.begin(), solutionAfterM.end());
-            }
-        }
+        // Combinar las soluciones de los subproblemas
+        result.insert(result.end(), leftResult.begin(), leftResult.end());
+        result.insert(result.end(), rightResult.begin(), rightResult.end());
     }
-
-    return solution;
+    return result;
 }
 
 int main() {
-    int T;
-    cin >> T;
+    int testCases;
+    cin >> testCases;
 
-    while (T--) {
+    while (testCases--) {
         int M;
         cin >> M;
 
         vector<Segment> segments;
-        Segment segment;
+        int left, right;
 
-        while (cin >> segment.left >> segment.right && (segment.left != 0 || segment.right != 0)) {
-            segments.push_back(segment);
+        while (cin >> left >> right) {
+            if (left == 0 && right == 0) {
+                break;
+            }
+
+            segments.push_back({ left, right });
         }
 
-        vector<Segment> solution = divideAndConquer(segments, M);
+        sort(segments.begin(), segments.end(), compareSegments);
 
-        if (solution.empty()) {
+        vector<Segment> result = minimalCoverage(segments, 0, segments.size(), M);
+
+        if (result.empty()) {
             cout << "0" << endl;
         } else {
-            cout << solution.size() << endl;
-
-            for (const auto& seg : solution) {
+            cout << result.size() << endl;
+            for (const Segment& seg : result) {
                 cout << seg.left << " " << seg.right << endl;
             }
         }
 
-        if (T > 0) {
-            cout << endl;  // Imprimir línea en blanco entre los casos de prueba
+        if (testCases > 0) {
+            cout << endl;
         }
     }
 
