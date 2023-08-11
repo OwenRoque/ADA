@@ -23,9 +23,9 @@ int knapsackDP(int W, const vector<int>& weights, const vector<int>& values) {
 
 int main() {
     // Capacidad de la mochila
-    int W = 50;
-    vector<int> weights = {10, 20, 30};
-    vector<int> values = {60, 100, 120};
+    int W = 61;
+    vector<int> weights = {1, 11, 21, 23, 33};
+    vector<int> values = {11, 21, 31, 33, 43};
 
     int maxValue = knapsackDP(W, weights, values);
     cout << "El valor máximo que se puede obtener es: " << maxValue << endl;
